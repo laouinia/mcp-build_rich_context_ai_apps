@@ -1,0 +1,82 @@
+#!/bin/sh
+#
+# Pre-commit hook for linting and type-checking.
+# Executes checks only on files staged for commit.
+# Includes commented-out --fix flags for ruff and ty.
+# Aborts commit on any linter or type-checker failure.
+
+# Helper function for printing section headers.
+print_header() {
+    # Use printf for POSIX-compliant, portable newline handling.
+    printf '\n--- %s ---\n' "$1"
+}
+
+# --- Rust Markdown Lint (rumdl) ---
+print_header "Pre-Commit: Running Rust Markdown Lint"
+# The pattern `\.mdx?$` matches files ending in `.md` (x is optional) or `.mdx`.
+STAGED_MD_FILES=$(git diff --cached --name-only --diff-filter=d | grep -E '\.mdx?$')
+
+if [ -n "$STAGED_MD_FILES" ]; then
+    echo "Checking staged Markdown files..."
+    echo "$STAGED_MD_FILES" | xargs rumdl check
+    if [ $? -ne 0 ]; then
+        echo "rumdl check failed. Aborting commit." >&2
+        exit 1
+    fi
+else
+    echo "No staged Markdown files to check."
+fi
+
+# --- Ruff (Python Linter) ---
+print_header "Pre-Commit: Running Ruff"
+# The pattern `\.(pyi?|ipynb)$` matches `.py`, `.pyi` (i is optional), or `.ipynb`.
+STAGED_PY_FILES=$(git diff --cached --name-only --diff-filter=d | grep -E '\.(pyi?|ipynb)$')
+
+if [ -n "$STAGED_PY_FILES" ]; then
+    # --- AUTO-FIXING DISABLED ---
+    # To enable, uncomment this block and comment out the "LINTING ONLY" block.
+    #
+    # echo "Formatting and fixing staged files..."
+    # echo "$STAGED_PY_FILES" | xargs ruff check --fix
+    # echo "$STAGED_PY_FILES" | xargs git add
+    # --- END AUTO-FIXING DISABLED ---
+
+    # --- LINTING ONLY (ACTIVE) ---
+    echo "Checking staged Python and Notebook files for linting errors..."
+    echo "$STAGED_PY_FILES" | xargs ruff check
+    if [ $? -ne 0 ]; then
+        echo "Ruff check failed. Fix errors manually and re-commit." >&2
+        exit 1
+    fi
+    # --- END LINTING ONLY ---
+else
+    echo "No staged Python or Notebook files to check."
+fi
+
+# --- ty (Python Type Checker) ---
+print_header "Pre-Commit: Running ty"
+# This reuses the STAGED_PY_FILES variable from the Ruff step.
+if [ -n "$STAGED_PY_FILES" ]; then
+    # --- AUTO-FIXING DISABLED ---
+    # To enable, uncomment this block and comment out the "TYPE-CHECKING ONLY" block.
+    #
+    # echo "Checking and fixing staged files for type errors..."
+    # echo "$STAGED_PY_FILES" | xargs ty check --fix
+    # echo "$STAGED_PY_FILES" | xargs git add
+    # --- END AUTO-FIXING DISABLED ---
+
+    # --- TYPE-CHECKING ONLY (ACTIVE) ---
+    echo "Checking staged Python and Notebook files for type errors..."
+    echo "$STAGED_PY_FILES" | xargs ty check
+    if [ $? -ne 0 ]; then
+        echo "ty check failed. Fix type errors manually and re-commit." >&2
+        exit 1
+    fi
+    # --- END TYPE-CHECKING ONLY ---
+else
+    echo "No staged Python or Notebook files to type-check."
+fi
+
+
+print_header "Pre-Commit Checks Passed"
+exit 0
