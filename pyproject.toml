@@ -1,0 +1,92 @@
+[project]
+authors = [{ name = "LA", email = "la@la.com" }]
+classifiers = [
+    "Development Status :: 1 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: MCP for Arxiv",
+]
+dependencies = []
+description = "MCP for Arxiv research papers"
+keywords = [
+    "MCP",
+    "Arxiv",
+]
+name = "mcp-build-rich-context-ai-apps"
+readme = "README.md"
+requires-python = ">=3.13"
+version = "0.1.0"
+
+[dependency-groups]
+dev = [
+    "anthropic>=0.60.0",
+    "arxiv>=2.2.0",
+    "dotenv>=0.9.9",
+    "ipykernel>=6.30.0",
+]
+
+[tool.rumdl]
+
+[tool.rumdl.MD013]
+code_blocks = true
+headings    = true
+line_length = 200
+tables      = false
+
+[tool.rumdl.MD046]
+# Code block style
+style = "fenced"
+
+[tool.rumdl.MD048]
+# Code fence style
+style = "backtick"
+
+[tool.rumdl.MD049]
+# Emphasis style (* or _)
+style = "asterisk"
+
+[tool.rumdl.MD050]
+# Strong emphasis style (** or __)
+style = "asterisk"
+
+[tool.ruff]
+exclude = [
+    ".git",
+    ".github",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+]
+line-length = 101
+show-fixes = true
+
+[tool.ruff.lint]
+extend-select = ["ALL"]
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+ignore = [
+    # from __future__ import annotation : included in python 3.10+
+    "FA102",
+    # Testing or temporary rule: Printing statements
+    "T201",
+]
+isort = { combine-as-imports = true }
+preview = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ty.environment]
+root = ["./"]
+
+[tool.ty.rules]
+possibly-unbound-attribute = "error"
+possibly-unbound-import    = "error"
+redundant-cast             = "error"
+unused-ignore-comment      = "error"
